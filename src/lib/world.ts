@@ -1,0 +1,92 @@
+/**
+ * Shared, mutable scroll state for the 3D world. Written by one scroll listener,
+ * read inside useFrame — never through React state, so scrolling never re-renders
+ * the tree and the scene stays at 60fps.
+ */
+import { useEffect } from 'react'
+import type { ActId } from './store'
+import { chapters } from './data'
+
+export interface WorldState {
+  /** page scroll in px */
+  scroll: number
+  /** how much of each act is on screen, 0..1 (used to cross-fade scene elements) */
+  w: Record<ActId, number>
+  /** 0..1 progress through the Act IV ring section */
+  ring: number
+  /** pointer in -1..1 */
+  px: number
+  py: number
+}
+
+export const world: WorldState = {
+  scroll: 0,
+  w: { hook: 1, river: 0, threads: 0, roll: 0 },
+  ring: 0,
+  px: 0,
+  py: 0,
+}
+
+const ACTS: ActId[] = ['hook', 'river', 'threads', 'roll']
+
+function measure() {
+  const vh = window.innerHeight
+  world.scroll = window.scrollY
+  for (const id of ACTS) {
+    const el = document.getElementById(`act-${id}`)
+    if (!el) {
+      world.w[id] = 0
+      continue
+    }
+    const r = el.getBoundingClientRect()
+    // fraction of the viewport this section covers, softened so neighbours cross-fade
+    const visible = Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0))
+    world.w[id] = Math.min(1, visible / (vh * 0.75))
+  }
+  const ring = document.getElementById('ring-track')
+  if (ring) {
+    const r = ring.getBoundingClientRect()
+    const total = r.height - vh
+    world.ring = total > 0 ? Math.min(1, Math.max(0, -r.top / total)) : 0
+  }
+}
+
+/** Scroll the Act IV ring track so chapter i faces the camera. */
+export function jumpToChapter(i: number) {
+  const track = document.getElementById('ring-track')
+  if (!track) return
+  const top = track.getBoundingClientRect().top + window.scrollY
+  const total = track.offsetHeight - window.innerHeight
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  window.scrollTo({ top: top + (i / (chapters.length - 1)) * total + 2, behavior: reduce ? 'auto' : 'smooth' })
+}
+
+/** Install the single scroll/pointer listener that feeds the world. */
+export function useWorldTracking() {
+  useEffect(() => {
+    let raf = 0
+    const onScroll = () => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(measure)
+    }
+    const onMove = (e: PointerEvent) => {
+      world.px = (e.clientX / window.innerWidth) * 2 - 1
+      world.py = (e.clientY / window.innerHeight) * 2 - 1
+    }
+    measure()
+    // lazy acts mount later — re-measure a few times after load
+    const t1 = window.setTimeout(measure, 600)
+    const t2 = window.setTimeout(measure, 2000)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    window.addEventListener('pointermove', onMove, { passive: true })
+    return () => {
+      cancelAnimationFrame(raf)
+      window.clearTimeout(t1)
+      window.clearTimeout(t2)
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      window.removeEventListener('pointermove', onMove)
+    }
+  }, [])
+}

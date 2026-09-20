@@ -1,0 +1,27 @@
+import puppeteer from 'puppeteer-core'
+const out = process.argv[2]
+const W = Number(process.argv[3] ?? 1440), H = Number(process.argv[4] ?? 900)
+const browser = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: 'new', args: ['--hide-scrollbars', '--use-gl=angle', '--enable-unsafe-swiftshader'] })
+const page = await browser.newPage()
+await page.setViewport({ width: W, height: H })
+page.on('pageerror', (e) => console.log('PAGE ERROR', e.message))
+page.on('console', (m) => (m.type() === 'error') && console.log('CONSOLE', m.text().slice(0, 200)))
+await page.goto('http://localhost:4173/', { waitUntil: 'networkidle0' })
+const wait = (ms) => new Promise((r) => setTimeout(r, ms))
+await wait(5000)
+await page.screenshot({ path: `${out}/w1-hook.png` })
+const go = async (id, name, extra = 0) => {
+  await page.evaluate((id) => document.getElementById(`act-${id}`).scrollIntoView({ behavior: 'auto' }), id)
+  if (extra) await page.evaluate((y) => window.scrollBy(0, y), extra)
+  await wait(3000)
+  await page.screenshot({ path: `${out}/${name}.png` })
+}
+await go('river', 'w2-river')
+await go('threads', 'w3-threads')
+await go('roll', 'w4-roll-a', 900)
+await page.evaluate(() => window.scrollBy(0, 2600)); await wait(3000)
+await page.screenshot({ path: `${out}/w4-roll-b.png` })
+await page.evaluate(() => window.scrollBy(0, 4000)); await wait(2500)
+await page.screenshot({ path: `${out}/w5-end.png` })
+await browser.close()
+console.log('ok')

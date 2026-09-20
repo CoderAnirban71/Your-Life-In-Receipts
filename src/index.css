@@ -1,0 +1,212 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ tokens
+   A thermal-printer receipt on a dark desk at night. Paper is warm; the desk is
+   near-black; one amber accent for money, one teal accent for music. */
+@theme {
+  --color-desk: #0b0a0f;
+  --color-desk-2: #131119;
+  --color-paper: #f4efe4;
+  --color-paper-2: #e9e2d3;
+  --color-ink: #1a1714;
+  --color-ink-2: #5b554c;
+  --color-amber: #f5b74a;
+  --color-ember: #f97316;
+  --color-teal: #4fd1c5;
+  --color-violet: #a78bfa;
+  --color-rose: #fb7185;
+  --color-fog: rgba(244, 239, 228, 0.6);
+  --color-fog-2: rgba(244, 239, 228, 0.32);
+  --color-line: rgba(244, 239, 228, 0.1);
+
+  --font-mono: "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--color-desk);
+  color: var(--color-paper);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-amber);
+  color: var(--color-ink);
+}
+
+/* subtle grain over the desk so flat colour never looks like a template */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* ------------------------------------------------------------------ receipt paper */
+.receipt {
+  position: relative;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 30px 60px -20px rgba(0, 0, 0, 0.7),
+    0 10px 20px -10px rgba(0, 0, 0, 0.6);
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 22px, rgba(0, 0, 0, 0.018) 22px 23px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.03), transparent 12%, transparent 88%, rgba(0, 0, 0, 0.03));
+}
+
+.receipt-tear-top,
+.receipt-tear-bottom {
+  --z: 10px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--z);
+  background: var(--color-paper);
+}
+.receipt-tear-top {
+  top: calc(var(--z) * -1);
+  clip-path: polygon(
+    0% 100%, 5% 0%, 10% 100%, 15% 0%, 20% 100%, 25% 0%, 30% 100%, 35% 0%, 40% 100%, 45% 0%,
+    50% 100%, 55% 0%, 60% 100%, 65% 0%, 70% 100%, 75% 0%, 80% 100%, 85% 0%, 90% 100%, 95% 0%, 100% 100%
+  );
+}
+.receipt-tear-bottom {
+  bottom: calc(var(--z) * -1);
+  clip-path: polygon(
+    0% 0%, 5% 100%, 10% 0%, 15% 100%, 20% 0%, 25% 100%, 30% 0%, 35% 100%, 40% 0%, 45% 100%,
+    50% 0%, 55% 100%, 60% 0%, 65% 100%, 70% 0%, 75% 100%, 80% 0%, 85% 100%, 90% 0%, 95% 100%, 100% 0%
+  );
+}
+
+.receipt-rule {
+  border: 0;
+  border-top: 1px dashed rgba(26, 23, 20, 0.35);
+  margin: 0.6rem 0;
+}
+
+.receipt-line {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: baseline;
+  font-size: 12.5px;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+}
+.receipt-line .dots {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ------------------------------------------------------------------ misc */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-fog-2);
+}
+
+.prose-story {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+  line-height: 1.65;
+  color: var(--color-fog);
+}
+.prose-story strong,
+.prose-story em {
+  color: var(--color-paper);
+  font-weight: 500;
+  font-style: normal;
+}
+
+.chip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  border: 1px solid var(--color-line);
+  color: var(--color-fog);
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.15s, color 0.15s, background 0.15s, transform 0.15s;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.chip:hover {
+  border-color: rgba(245, 183, 74, 0.5);
+  color: var(--color-paper);
+}
+.chip[aria-pressed="true"] {
+  background: rgba(245, 183, 74, 0.14);
+  border-color: rgba(245, 183, 74, 0.6);
+  color: var(--color-amber);
+}
+.chip:focus-visible,
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-amber);
+  outline-offset: 2px;
+}
+
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(244, 239, 228, 0.2) transparent;
+}
+
+.glow-amber {
+  box-shadow: 0 0 0 1px rgba(245, 183, 74, 0.25), 0 0 40px -10px rgba(245, 183, 74, 0.5);
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.cursor-blink {
+  animation: blink 1s steps(2, start) infinite;
+}
+
+@keyframes drift {
+  from { transform: translateY(0); }
+  to { transform: translateY(-14px); }
+}
+
+/* Motion respects the OS setting: every animation collapses to (near) instant. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
