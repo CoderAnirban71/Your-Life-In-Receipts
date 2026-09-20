@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { chapters, meta, threads } from '../lib/data'
+import { chapters, threads } from '../lib/data'
 import { scrollToAct, useStory } from '../lib/store'
 import { jumpToChapter, world } from '../lib/world'
 import { fmtDay, fmtMonth, inr } from '../lib/format'
 import { SectionHeading } from '../components/shared/SectionHeading'
-import { ReceiptStrip, ReceiptHeader, ReceiptRule, ReceiptLine } from '../components/receipt/ReceiptStrip'
-import { AnimatedCounter } from '../components/shared/AnimatedCounter'
 
 const N = chapters.length
 
@@ -16,7 +14,7 @@ const N = chapters.length
  * Everything a chapter has to say lives here, once.
  */
 export function ActIV_FullRoll() {
-  const { openDayDrawer, setRange, setActiveThread, resetRange } = useStory()
+  const { openDayDrawer, setRange, setActiveThread } = useStory()
   const [active, setActive] = useState(0)
 
   // follow the ring: the world's scroll listener already computed world.ring
@@ -161,10 +159,18 @@ export function ActIV_FullRoll() {
         </div>
       </div>
 
-      {/* closing */}
-      <div className="mx-auto max-w-6xl px-4 pb-24 pt-16 sm:px-8">
+    </section>
+  )
+}
+
+/** The credits. Its own act so the camera can pull back over the spiral. */
+export function ActV_End() {
+  const { resetRange } = useStory()
+  return (
+    <section id="act-end" className="relative scroll-mt-16">
+      <div className="mx-auto max-w-6xl px-4 pb-24 pt-[30svh] sm:px-8 md:pt-[40svh]">
         <motion.div
-          className="grid gap-10 md:grid-cols-[1fr_380px] md:items-center"
+          className="grid gap-10 md:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] md:items-center"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: '-10% 0px' }}
@@ -195,18 +201,6 @@ export function ActIV_FullRoll() {
               </button>
             </div>
           </div>
-          <ReceiptStrip className="rotate-[1.2deg]">
-            <ReceiptHeader title="Totals" sub="2015 → 2018" />
-            <ReceiptRule />
-            <ReceiptLine left="DAYS" right={<AnimatedCounter to={1359} />} />
-            <ReceiptLine left="RECEIPTS" right={<AnimatedCounter to={meta.receipts} />} />
-            <ReceiptLine left="SONGS" right={<AnimatedCounter to={meta.listens} />} />
-            <ReceiptLine left="ARTISTS" right={<AnimatedCounter to={meta.artists} />} />
-            <ReceiptLine left="SPENT" right={<AnimatedCounter to={meta.spend} format={(n) => inr(n)} />} className="font-bold" />
-            <ReceiptRule />
-            <ReceiptLine left="CHANGE" right="everything" className="font-bold" />
-            <div className="mt-4 text-center text-[10px] tracking-[0.2em] text-ink-2">THANK YOU FOR LIVING</div>
-          </ReceiptStrip>
         </motion.div>
       </div>
     </section>

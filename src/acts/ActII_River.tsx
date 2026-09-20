@@ -52,16 +52,15 @@ export function ActII_River() {
           }
         />
 
-        <div className="rounded-xl border border-line bg-desk-2/60 p-3 sm:p-5">
+        <div className="rounded-xl border border-line bg-desk/80 p-3 backdrop-blur-md sm:p-5">
           <RiverOfDays />
         </div>
 
-        <div className="mt-10">
+        <div className="mt-8 rounded-xl border border-line bg-desk/75 p-4 backdrop-blur-md sm:p-6">
           <FilterBar count={rows.length} />
-        </div>
-
-        <div className="mt-10">
-          <ReceiptFeed rows={rows} />
+          <div className="mt-8">
+            <ReceiptFeed rows={rows} />
+          </div>
         </div>
       </div>
     </section>

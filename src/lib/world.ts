@@ -10,38 +10,48 @@ import { chapters } from './data'
 export interface WorldState {
   /** page scroll in px */
   scroll: number
-  /** how much of each act is on screen, 0..1 (used to cross-fade scene elements) */
+  /** how much of each act is on screen, 0..1 (used to cross-fade scene elements and camera shots) */
   w: Record<ActId, number>
+  /** 0..1 progress through each act (drives camera moves inside a shot) */
+  p: Record<ActId, number>
   /** 0..1 progress through the Act IV ring section */
   ring: number
   /** pointer in -1..1 */
   px: number
   py: number
+  /** index of the thread card currently in view (-1 = none) */
+  thread: number
 }
 
 export const world: WorldState = {
   scroll: 0,
   w: { hook: 1, river: 0, threads: 0, roll: 0, end: 0 },
+  p: { hook: 0, river: 0, threads: 0, roll: 0, end: 0 },
   ring: 0,
   px: 0,
   py: 0,
+  thread: -1,
 }
 
-const ACTS: ActId[] = ['hook', 'river', 'threads', 'roll']
+export const ACT_IDS: ActId[] = ['hook', 'river', 'threads', 'roll', 'end']
 
 function measure() {
   const vh = window.innerHeight
   world.scroll = window.scrollY
-  for (const id of ACTS) {
+  for (const id of ACT_IDS) {
     const el = document.getElementById(`act-${id}`)
     if (!el) {
       world.w[id] = 0
+      world.p[id] = 0
       continue
     }
     const r = el.getBoundingClientRect()
     // fraction of the viewport this section covers, softened so neighbours cross-fade
     const visible = Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0))
     world.w[id] = Math.min(1, visible / (vh * 0.75))
+    // 0 when the section's top reaches the viewport top … 1 when its bottom is about to leave
+    const span = Math.max(1, r.height - vh * 0.5)
+    world.p[id] = Math.min(1, Math.max(0, -r.top / span))
   }
   const ring = document.getElementById('ring-track')
   if (ring) {
@@ -75,15 +85,13 @@ export function useWorldTracking() {
     }
     measure()
     // lazy acts mount later — re-measure a few times after load
-    const t1 = window.setTimeout(measure, 600)
-    const t2 = window.setTimeout(measure, 2000)
+    const timers = [600, 1500, 3000].map((ms) => window.setTimeout(measure, ms))
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onScroll)
     window.addEventListener('pointermove', onMove, { passive: true })
     return () => {
       cancelAnimationFrame(raf)
-      window.clearTimeout(t1)
-      window.clearTimeout(t2)
+      timers.forEach((t) => window.clearTimeout(t))
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
       window.removeEventListener('pointermove', onMove)

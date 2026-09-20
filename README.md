@@ -16,10 +16,10 @@ The experience is structured as four acts, following the brief's arc of **Raw Da
 
 | Act | What it is | Brief requirement it satisfies |
 |---|---|---|
-| **I · The Receipt** | A thermal receipt prints itself, line by line — while real receipts (painted from actual ledger rows) drift through a lamp-lit 3D room behind it, leaning toward the cursor. | Interactive storytelling hook |
-| **II · The River** | Every day of the ledger as one shape: spending up, listening down. Brush to focus, hover to read, click any day or any receipt line to open it. Fuzzy search + category chips. Behind it, a 3D paper river flows — amber above the waterline, teal below. | Exploration · filtering/search/navigation · visual representation of the journey |
-| **III · The Threads** | Ten patterns found by a detector pass that reads *both* diaries at once — payday pulses, the wedding silence, the 3 AM club, money going home, the song that wouldn't play. Every number links back to a real receipt. Behind the cards, the same evidence hangs as a slowly turning 3D constellation, one colour per thread. | Meaningful mechanism for discovering relationships |
-| **IV · The Full Roll** | The seven chapters stand as receipts in a 3D ring. Scrolling turns the ring; a glass panel tells the chapter facing you — prose, stats, biggest lines (tap to open the day), related threads. Each chapter appears exactly once. | Story · visual journey |
+| **I · The Receipt** | A title card, then a desk at night: a thermal printer on the desk prints the four-year summary in real time — the paper rises out of the slot in feed steps under a lamp whose beam you can see in the air — while real receipts (painted from actual ledger rows) drift through the room. | Interactive storytelling hook |
+| **II · The River** | Every day of the ledger as one shape: spending up, listening down. Brush to focus, hover to read, click any day or any receipt line to open it. Fuzzy search + category chips. The camera drops to desk level and tracks along the same data as terrain: every week a bar, spending above a glowing waterline, listening below it, and the range you brush on the chart lights up on the terrain. | Exploration · filtering/search/navigation · visual representation of the journey |
+| **III · The Threads** | Ten patterns found by a detector pass that reads *both* diaries at once — payday pulses, the wedding silence, the 3 AM club, money going home, the song that wouldn't play. Every number links back to a real receipt. Beside the cards, the same evidence hangs as a slowly turning constellation, one colour per thread; the cluster of the card you are reading swells and its label brightens. | Meaningful mechanism for discovering relationships |
+| **IV · The Full Roll** | The seven chapters stand as receipts in a ring on the desk. Scrolling turns the ring; the chapter facing you steps forward under its own spotlight and a glass panel tells it — prose, stats, biggest lines (tap to open the day), related threads. Each chapter appears exactly once. Then the credits: every receipt gathers into one slow spiral as the camera pulls back. | Story · visual journey |
 
 Opening any day shows the **Day Drawer**: the receipts on the left, what was playing on the right, and a one-sentence "pattern detected" diary line composed from those rows. ← / → step through days; Esc closes.
 
@@ -73,6 +73,7 @@ Frontend/
 │   │   ├── data.ts        # typed access + lazy listens index
 │   │   ├── store.ts       # Zustand: range · groups · query · open day · active thread
 │   │   ├── world.ts       # scroll → 3D world state (no React re-renders), jumpToChapter
+│   │   ├── sound.ts       # synthesized ambience + printer ticks (WebAudio, opt-in)
 │   │   ├── diary.ts       # runtime "pattern detected" sentence
 │   │   └── format.ts      # ₹ / date helpers, category labels + colours
 │   ├── components/
@@ -81,7 +82,8 @@ Frontend/
 │   │   ├── threads/       # ThreadCard
 │   │   ├── filters/       # FilterBar (Fuse.js search + chips)
 │   │   ├── shared/        # AnimatedCounter, Sparkline, SectionHeading
-│   │   ├── three/         # World (one scene, four acts), WorldMount, paperTexture, useSceneGate
+│   │   ├── three/         # World, WorldMount, paperTexture, labelSprite, useSceneGate
+│   │   │   └── set/       # Desk · Lamp · Printer · Sheets · RiverTerrain · Constellation · Ring · EndHelix · CameraRig · Effects
 │   │   ├── DayDrawer.tsx  # the connection view
 │   │   ├── Nav.tsx        # progress bar + act links
 │   │   └── Colophon.tsx   # what is real / what is interpretation
@@ -103,9 +105,9 @@ flowchart LR
   II & III & IV --> D[Day Drawer]
 ```
 
-**Stack:** React 19 · TypeScript · Vite · Tailwind CSS v4 · Motion (Framer) · D3 (scale, brush, time) · three.js + React Three Fiber · Zustand · Fuse.js. No backend, no runtime CSV parsing, no external API.
+**Stack:** React 19 · TypeScript · Vite · Tailwind CSS v4 · Motion (Framer) · D3 (scale, brush, time) · three.js + React Three Fiber + drei + postprocessing · Zustand · Fuse.js. No backend, no runtime CSV parsing, no external API, no asset files — every texture is painted at runtime from the data.
 
-**3D — one world, four acts:** a single persistent `<Canvas>` (`src/components/three/World.tsx`) sits behind the whole page. `src/lib/world.ts` holds a tiny mutable scroll state (how much of each act is on screen, ring progress, pointer) written by one scroll listener and read inside `useFrame`, so scrolling never re-renders React. Each act owns one element in the scene and cross-fades with the others: drifting receipts + dust (Act I, always present as a backdrop), the paper river ribbon (Act II), the evidence constellation built from `threads.json` (Act III), the chapter ring (Act IV). Key/fill light colours lerp per act. `paperTexture.ts` paints every 3D receipt from real ledger text — no font files, no images. `useSceneGate.ts` mounts the world only with WebGL and without `prefers-reduced-motion`; three.js ships in its own lazy chunk (~240 KB gzipped) that the first paint never downloads.
+**3D — a film set, not a backdrop:** one persistent `<Canvas>` (`src/components/three/World.tsx`) with a designed set in `src/components/three/set/`: `Desk` (reflective surface), `Lamp` (spot light + a shader-drawn volumetric beam), `Printer` (clip-plane receipt that prints in feed steps), `Sheets` + `Dust` (the room's air), `RiverTerrain` (instanced bars for 195 weeks, synced to the 2D brush), `Constellation` (instanced glowing nodes + label sprites, synced to the card in view), `Ring` (seven chapter receipts + a spotlight that follows the active one), `EndHelix` (the credits spiral). `CameraRig` treats the camera as a character: each act is a shot (dolly-in, tracking, orbit, wide, pull-back) and scrolling cross-fades between them. `Effects` adds bloom, film grain and a vignette. `src/lib/world.ts` holds a tiny mutable scroll state written by one listener and read inside `useFrame`, so scrolling never re-renders React. Every 3D receipt is painted from real ledger text (`paperTexture.ts`) — no font files, no images, no external assets. `useSceneGate.ts` mounts the world only with WebGL and without `prefers-reduced-motion`; three.js ships in its own lazy chunk that the first paint never downloads; the **FX** toggle in the nav switches to a lighter render path (and defaults off on ≤4-core devices); the **♪** toggle plays a synthesized room tone and printer ticks (WebAudio, no audio files, off by default).
 
 **Performance:** the raw CSVs are pre-aggregated once at build time; the initial bundle carries only the ledger + daily aggregates (~90 KB gzipped), the 24k-row listening log and track dictionary load on first day-open, and Acts III/IV are code-split behind the fold.
 
@@ -139,5 +141,7 @@ npm run preview
 - Ledger rows without a time of day are placed at 00:00, so they never count toward the 3 AM thread.
 - The Spotify IST conversion is an assumption (the ledger is clearly Indian; the streaming file has no timezone).
 - The third dataset is deliberately unused in the UI because its rows are not one person's life.
-#   Y o u r - L i f e - I n - R e c e i p t s  
+- The 3D scene mutates three.js objects inside `useFrame` (the React Three Fiber idiom), so the React purity lint rules are scoped off for `src/components/three/**` in `.oxlintrc.json`.
+#   Y o u r - L i f e - I n - R e c e i p t s 
+ 
  

@@ -31,7 +31,7 @@ export function ThreadCard({ thread, index }: { thread: Thread; index: number })
 
   return (
     <motion.article
-      className={`relative rounded-xl border p-6 sm:p-7 bg-desk-2/70 backdrop-blur-sm transition-colors ${active ? 'border-amber/60 glow-amber' : 'border-line'}`}
+      className={`relative rounded-xl border p-6 sm:p-7 bg-desk/75 backdrop-blur-md transition-colors ${active ? 'border-amber/60 glow-amber' : 'border-line'}`}
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-10% 0px' }}

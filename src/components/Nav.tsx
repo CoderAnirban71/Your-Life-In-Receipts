@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion, useScroll, useSpring } from 'motion/react'
-import { scrollToAct, type ActId } from '../lib/store'
+import { scrollToAct, useStory, type ActId } from '../lib/store'
+import { sound } from '../lib/sound'
 
 const ACTS: { id: ActId; label: string }[] = [
   { id: 'hook', label: 'I · Receipt' },
@@ -13,6 +14,16 @@ export function Nav() {
   const { scrollYProgress } = useScroll()
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.3 })
   const [active, setActive] = useState<ActId>('hook')
+  const fx = useStory((s) => s.fx)
+  const toggleFx = useStory((s) => s.toggleFx)
+  const snd = useStory((s) => s.sound)
+  const toggleSound = useStory((s) => s.toggleSound)
+
+  const onSound = () => {
+    if (snd) sound.disable()
+    else void sound.enable()
+    toggleSound()
+  }
 
   useEffect(() => {
     const io = new IntersectionObserver(
@@ -49,6 +60,24 @@ export function Nav() {
           EVERY RECEIPT <span className="text-amber">REMEMBERS</span>
         </button>
         <ul className="flex items-center gap-1 sm:gap-2">
+          <li className="mr-1 flex items-center gap-1 border-r border-line pr-2 sm:mr-2 sm:pr-3">
+            <button
+              onClick={onSound}
+              aria-pressed={snd}
+              title={snd ? 'Sound on — click to mute' : 'Sound off — synthesized room tone + printer'}
+              className={`rounded-full px-2 py-1 font-mono text-[10px] tracking-[0.12em] transition ${snd ? 'bg-teal/20 text-teal' : 'text-fog-2 hover:text-paper'}`}
+            >
+              {snd ? '♪ ON' : '♪ OFF'}
+            </button>
+            <button
+              onClick={toggleFx}
+              aria-pressed={fx}
+              title={fx ? 'Cinematic effects on (bloom, grain) — click for the light render path' : 'Effects off — click for the full film look'}
+              className={`rounded-full px-2 py-1 font-mono text-[10px] tracking-[0.12em] transition ${fx ? 'bg-amber/20 text-amber' : 'text-fog-2 hover:text-paper'}`}
+            >
+              FX
+            </button>
+          </li>
           {ACTS.map((a) => (
             <li key={a.id}>
               <button

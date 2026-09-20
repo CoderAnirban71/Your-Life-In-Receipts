@@ -19,9 +19,8 @@ export function WorldMount({ onPickChapter }: { onPickChapter: (i: number) => vo
           <World onPickChapter={onPickChapter} />
         </Suspense>
       )}
-      {/* vignette keeps type legible over the moving paper, on every act */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_45%,rgba(11,10,15,0.75)_100%)]" />
-      <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-desk to-transparent" />
+      {/* a light vignette keeps type legible over the set on every act */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_50%,rgba(11,10,15,0.6)_100%)]" />
     </div>
   )
 }

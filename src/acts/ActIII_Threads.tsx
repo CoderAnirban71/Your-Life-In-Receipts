@@ -1,9 +1,26 @@
+import { useEffect } from 'react'
 import { threads } from '../lib/data'
+import { world } from '../lib/world'
 import { SectionHeading } from '../components/shared/SectionHeading'
 import { ThreadCard } from '../components/threads/ThreadCard'
 
 /** Act III — the threads. Patterns the pipeline found by reading both diaries at once. */
 export function ActIII_Threads() {
+  // tell the constellation which thread is being read
+  useEffect(() => {
+    const cards = document.querySelectorAll<HTMLElement>('[data-thread-index]')
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) world.thread = Number((e.target as HTMLElement).dataset.threadIndex)
+      },
+      { rootMargin: '-35% 0px -45% 0px' },
+    )
+    cards.forEach((c) => io.observe(c))
+    return () => {
+      io.disconnect()
+      world.thread = -1
+    }
+  }, [])
   return (
     <section id="act-threads" className="relative scroll-mt-16 px-4 py-24 sm:px-8">
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber/40 to-transparent" />
@@ -26,9 +43,11 @@ export function ActIII_Threads() {
           }
         />
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid max-w-[640px] gap-6">
           {threads.map((t, i) => (
-            <ThreadCard key={t.id} thread={t} index={i} />
+            <div key={t.id} data-thread-index={i}>
+              <ThreadCard thread={t} index={i} />
+            </div>
           ))}
         </div>
       </div>

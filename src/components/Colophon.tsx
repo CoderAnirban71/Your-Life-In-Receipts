@@ -27,9 +27,9 @@ export function Colophon() {
         <div>
           <span className="eyebrow">how it is built</span>
           <p className="mt-3 text-sm leading-relaxed text-fog">
-            React 19 · TypeScript · Vite · Tailwind v4 · Motion · D3 (scales, brush) · three.js + React Three Fiber (one persistent scene behind every act — drifting receipts, the paper river, the evidence constellation, the chapter ring — every 3D receipt painted from real ledger lines) · Zustand · Fuse.js. No backend: the CSVs are
+            React 19 · TypeScript · Vite · Tailwind v4 · Motion · D3 (scales, brush) · three.js + React Three Fiber + postprocessing (one film set behind every act — a desk at night, a lamp, a thermal printer that prints the summary on load, the river as terrain, the evidence as a constellation, the chapters as a ring, the credits as a spiral — with a scroll-driven camera and every 3D receipt painted from real ledger lines) · Zustand · Fuse.js. No backend: the CSVs are
             pre-aggregated once at build time into static JSON, the listening log loads lazily, the 3D scenes load lazily, pause off-screen and are skipped entirely without WebGL or under{' '}
-            <span className="font-mono text-paper">prefers-reduced-motion</span>. Keyboard: ← → move between days, Esc closes.
+            <span className="font-mono text-paper">prefers-reduced-motion</span>. Keyboard: ← → move between days, Esc closes. FX and ♪ in the nav switch the film look and the synthesized room tone.
           </p>
         </div>
       </div>

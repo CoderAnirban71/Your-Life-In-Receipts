@@ -3,26 +3,22 @@ import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react'
 import { meta } from '../lib/data'
 import { scrollToAct } from '../lib/store'
 import { fmtDay, inr } from '../lib/format'
-import { ReceiptStrip, ReceiptRule, ReceiptLine } from '../components/receipt/ReceiptStrip'
 import { AnimatedCounter } from '../components/shared/AnimatedCounter'
 
-const lines: { left: string; right?: string; bold?: boolean; muted?: boolean }[] = [
-  { left: 'EVERY RECEIPT REMEMBERS', bold: true },
-  { left: 'customer', right: 'R.', muted: true },
-  { left: 'period', right: `${fmtDay(meta.window[0])} → ${fmtDay(meta.window[1])}`, muted: true },
-  { left: '---' },
-  { left: 'RECEIPTS', right: meta.receipts.toLocaleString('en-IN') },
-  { left: 'SONGS PLAYED', right: meta.listens.toLocaleString('en-IN') },
-  { left: 'HOURS OF MUSIC', right: meta.hours.toLocaleString('en-IN') },
-  { left: 'SPENT', right: inr(meta.spend) },
-  { left: 'RECEIVED', right: inr(meta.income) },
-  { left: '---' },
-  { left: 'WEDDINGS', right: '1' },
-  { left: 'ROOT CANALS', right: '1' },
-  { left: 'SONGS NEVER FINISHED', right: '84' },
-  { left: 'TRANSFERS HOME', right: '41' },
-  { left: '---' },
-  { left: 'TOTAL', right: 'ONE LIFE', bold: true },
+/** The summary receipt is printed by the 3D printer on the desk; this copy is for screen readers. */
+const summary: [string, string][] = [
+  ['Customer', 'R.'],
+  ['Period', `${fmtDay(meta.window[0])} to ${fmtDay(meta.window[1])}`],
+  ['Receipts', meta.receipts.toLocaleString('en-IN')],
+  ['Songs played', meta.listens.toLocaleString('en-IN')],
+  ['Hours of music', meta.hours.toLocaleString('en-IN')],
+  ['Spent', inr(meta.spend)],
+  ['Received', inr(meta.income)],
+  ['Weddings', '1'],
+  ['Root canals', '1'],
+  ['Songs never finished', '84'],
+  ['Transfers home', '41'],
+  ['Total', 'one life'],
 ]
 
 /** Act I — a blank receipt prints itself. The hook. */
@@ -30,7 +26,6 @@ export function ActI_Hook() {
   const ref = useRef<HTMLElement>(null)
   const reduce = useReducedMotion()
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
-  const paperY = useTransform(scrollYProgress, [0, 1], [0, reduce ? 0 : -140])
   const textY = useTransform(scrollYProgress, [0, 1], [0, reduce ? 0 : -60])
   const fade = useTransform(scrollYProgress, [0, 0.7], [1, 0])
 
@@ -41,7 +36,7 @@ export function ActI_Hook() {
       {/* desk lamp glow */}
       <div aria-hidden className="pointer-events-none absolute left-1/2 top-[-20%] h-[70vh] w-[70vw] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(245,183,74,0.14),transparent)] blur-2xl" />
 
-      <div className="mx-auto grid max-w-6xl items-center gap-12 pt-28 pb-16 md:min-h-[100svh] md:grid-cols-[1.1fr_0.9fr] md:pt-16">
+      <div className="mx-auto grid max-w-6xl items-center gap-12 pt-24 pb-[58svh] md:min-h-[100svh] md:grid-cols-[1.05fr_0.95fr] md:pb-16 md:pt-16">
         <motion.div style={{ y: textY, opacity: fade }} className="relative z-10">
           <motion.span className="eyebrow block mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
             an interactive data story · frontend only
@@ -85,34 +80,15 @@ export function ActI_Hook() {
           </motion.div>
         </motion.div>
 
-        <motion.div style={{ y: paperY }} className="relative z-10 mx-auto w-full max-w-[380px] md:justify-self-end">
-          <ReceiptStrip className="rotate-[-1.5deg]">
-            {lines.map((l, i) => (
-              <motion.div
-                key={i}
-                initial={reduce ? false : { opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 + i * 0.16, duration: 0.25 }}
-              >
-                {l.left === '---' ? (
-                  <ReceiptRule />
-                ) : (
-                  <ReceiptLine left={l.left} right={l.right} muted={l.muted} className={`${l.bold ? 'font-bold' : ''} ${i === 0 ? 'justify-center text-center text-[13px] tracking-[0.2em] !grid-cols-1 mb-2' : ''}`} />
-                )}
-              </motion.div>
-            ))}
-            <motion.div
-              className="mt-3 text-center text-[10px] tracking-[0.2em] text-ink-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 + lines.length * 0.16 + 0.3 }}
-            >
-              KEEP THIS RECEIPT <span className="cursor-blink">▍</span>
-            </motion.div>
-          </ReceiptStrip>
-          {/* a second, torn scrap peeking behind — depth without images */}
-          <div aria-hidden className="receipt absolute -right-6 top-10 -z-10 h-[70%] w-[220px] rotate-[7deg] opacity-40" />
-        </motion.div>
+        {/* the right column is the printer on the desk, rendered by the 3D world */}
+        <dl className="sr-only">
+          {summary.map(([k, v]) => (
+            <div key={k}>
+              <dt>{k}</dt>
+              <dd>{v}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
 
       <motion.div

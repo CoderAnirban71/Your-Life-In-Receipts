@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Nav } from './components/Nav'
 import { DayDrawer } from './components/DayDrawer'
 import { Colophon } from './components/Colophon'
+import { IntroCurtain } from './components/IntroCurtain'
 import { WorldMount } from './components/three/WorldMount'
 import { jumpToChapter } from './lib/world'
 import { ActI_Hook } from './acts/ActI_Hook'
@@ -10,6 +11,7 @@ import { ActII_River } from './acts/ActII_River'
 // Acts III + IV are below the fold: split them out of the first paint.
 const ActIII_Threads = lazy(() => import('./acts/ActIII_Threads').then((m) => ({ default: m.ActIII_Threads })))
 const ActIV_FullRoll = lazy(() => import('./acts/ActIV_FullRoll').then((m) => ({ default: m.ActIV_FullRoll })))
+const ActV_End = lazy(() => import('./acts/ActIV_FullRoll').then((m) => ({ default: m.ActV_End })))
 
 export default function App() {
   return (
@@ -29,12 +31,14 @@ export default function App() {
         <Suspense fallback={<div className="px-8 py-24 font-mono text-[11px] tracking-[0.2em] text-fog-2">PRINTING…</div>}>
           <ActIII_Threads />
           <ActIV_FullRoll />
+          <ActV_End />
         </Suspense>
       </main>
       <div className="relative z-10">
         <Colophon />
       </div>
       <DayDrawer />
+      <IntroCurtain />
     </>
   )
 }
