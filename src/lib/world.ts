@@ -21,7 +21,7 @@ export interface WorldState {
 
 export const world: WorldState = {
   scroll: 0,
-  w: { hook: 1, river: 0, threads: 0, roll: 0 },
+  w: { hook: 1, river: 0, threads: 0, roll: 0, end: 0 },
   ring: 0,
   px: 0,
   py: 0,
